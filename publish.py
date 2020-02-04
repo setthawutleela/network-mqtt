@@ -2,24 +2,20 @@ from socket import *
 import sys, os
 
 def main():
-    MAX_BUF = 2048
     SERV_PORT = 8000
 
     ip = str(sys.argv[1])
     topic = str(sys.argv[2])
+    data = str(sys.argv[3])
 
-    print('IP address: ' + ip)
-    print('Topic: '+ topic)
+    print('IP address: ', ip)
+    print('Topic: ', str(topic))
+    print('Data: ', str(data))
 
     addr = (ip, SERV_PORT)
     s = socket(AF_INET, SOCK_STREAM)
     s.connect(addr)
-    s.send(('SUB\t'+topic).encode('utf-8'))
-
-    while True:
-        msg = s.recv(MAX_BUF)
-        if(len(msg) > 0):
-            print('Publisher> %s'%(msg.decode('utf-8')))
+    s.send(('PUB\t'+topic+'\t'+data).encode('utf-8'))
 
     s.close()
 
@@ -27,7 +23,7 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print ('Interrupted ..')
+        print ('Program interrupted..')
         try:
             sys.exit(0)
         except SystemExit:
