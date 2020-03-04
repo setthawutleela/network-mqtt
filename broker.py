@@ -42,6 +42,7 @@ def shutdown_connection():
     for list_conn_sock in list_socket_topic.values():
         for conn_sock in list_conn_sock:
             conn_sock['conn_sock'].send(('SHUTDOWN_CONN').encode('utf-8'))
+            # print IP address and port of connected socket
             print('CLOSED '+str(conn_sock['address'][0])+':'+str(conn_sock['address'][1])) 
 
 def delSocket(conn_sock):
@@ -78,24 +79,28 @@ def handle_client(conn_sock, cli_sock_addr, welcome_sock, ):
                 elif(isPublisher(msg_decoded)):
                     print(msg_decoded.split('\t')[0]+' '+getTopic(msg_decoded)+' '+getData(msg_decoded)+'\t'+str(cli_sock_addr[0])+':'+str(cli_sock_addr[1]))
                     
-                    #If publisher sends the message for subscriber to disconnect broker
-                    if ('QUIT' == getData(msg_decoded).upper()):
-                        sockets = getSocket(list_socket_topic, getTopic(msg_decoded))
-                        addresses = getAddr(list_socket_topic, getTopic(msg_decoded))
-                        for s, a in zip(sockets, addresses):
-                            s.send(('SHUTDOWN_CONN').encode('utf-8'))
-                            print('CLOSED '+str(a[0])+':'+str(a[1]))
-                        del list_socket_topic[getTopic(msg_decoded)]
+                    # Publisher's topic matches with Subscriber's topic
+                    if(pairTopic(list_socket_topic, getTopic(msg_decoded))):
+
+                        #If publisher sends the message for subscriber to disconnect broker
+                        if('QUIT' == getData(msg_decoded).upper()):
+                            sockets = getSocket(list_socket_topic, getTopic(msg_decoded))
+                            addresses = getAddr(list_socket_topic, getTopic(msg_decoded))
+                            for s, a in zip(sockets, addresses):
+                                s.send(('SHUTDOWN_CONN').encode('utf-8'))
+                                print('CLOSED '+str(a[0])+':'+str(a[1]))
+                            del list_socket_topic[getTopic(msg_decoded)]
                     
-                    #If publisher wants to send the message to matched topics
-                    elif(pairTopic(list_socket_topic, getTopic(msg_decoded))):
-                        sockets = getSocket(list_socket_topic, getTopic(msg_decoded))
-                        addresses = getAddr(list_socket_topic, getTopic(msg_decoded))
-                        for s, a in zip(sockets, addresses):
-                            s.send((getData(msg_decoded)).encode('utf-8'))
-                    conn_sock.close()
+                        #If publisher wants to send the message to matched topics
+                        else:
+                            sockets = getSocket(list_socket_topic, getTopic(msg_decoded))
+                            addresses = getAddr(list_socket_topic, getTopic(msg_decoded))
+                            for s, a in zip(sockets, addresses):
+                                s.send((getData(msg_decoded)).encode('utf-8'))
+                        
+                        conn_sock.close()
                     break
-                    
+
         except BlockingIOError:
             pass
 
@@ -140,7 +145,8 @@ def main():
             except:
                 print("Cannot start thread..")
                 import traceback
-                traceback.print_exc()
+                # Give the error
+                traceback.print_exc() 
         except BlockingIOError:
             pass
 
