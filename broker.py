@@ -4,8 +4,10 @@ import sys, os
 
 def addConSock(list_socket_topic, topic, conn_sock, cli_sock_addr):
     """Store the information about connecting socket from subscriber"""
+    # That topic exists in the list
     if topic in list_socket_topic:
         list_socket_topic[topic].append({'conn_sock': conn_sock, 'address': cli_sock_addr})
+    # New topic
     else:
         list_socket_topic[topic] = [{'conn_sock' : conn_sock, 'address': cli_sock_addr}]
 
@@ -65,15 +67,17 @@ def handle_client(conn_sock, cli_sock_addr, welcome_sock, ):
 
                 # If that message comes from subscriber
                 if(isSubscriber(msg_decoded)):
-                    # If subscriber is closed
+                    
+                    # If subscriber is closed by keyboard interrupted
                     if('DEL_SOCKET' == msg_decoded.split('\t')[1]):
                         delSocket(conn_sock)
+                        break
                     
                     # If new subscriber subscribes the broker
                     else:
+                        # cli_sock_addr[0] = IP address, cli_sock_addr[1] = Generated port
                         print(msg_decoded.split('\t')[0]+' '+getTopic(msg_decoded)+'\t'+str(cli_sock_addr[0])+':'+str(cli_sock_addr[1]))
-                        addConSock(list_socket_topic, getTopic(msg_decoded), conn_sock, cli_sock_addr)
-                
+                        addConSock(list_socket_topic, getTopic(msg_decoded), conn_sock, cli_sock_addr)          
                 
                 # If that message comes from publisher
                 elif(isPublisher(msg_decoded)):
@@ -94,8 +98,7 @@ def handle_client(conn_sock, cli_sock_addr, welcome_sock, ):
                         #If publisher wants to send the message to matched topics
                         else:
                             sockets = getSocket(list_socket_topic, getTopic(msg_decoded))
-                            addresses = getAddr(list_socket_topic, getTopic(msg_decoded))
-                            for s, a in zip(sockets, addresses):
+                            for s in sockets:
                                 s.send((getData(msg_decoded)).encode('utf-8'))
                         
                         conn_sock.close()
@@ -127,7 +130,7 @@ def main():
         except SystemExit:
             os._exit(0)
         
-    welcome_sock.listen(5)
+    welcome_sock.listen(0)
 
     print('\nTCP server is running on '+ str(ip) + ':' + str(SERV_PORT))
 
@@ -147,6 +150,7 @@ def main():
                 import traceback
                 # Give the error
                 traceback.print_exc() 
+
         except BlockingIOError:
             pass
 
