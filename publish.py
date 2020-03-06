@@ -59,7 +59,7 @@ def main():
     # Send the topic and data to the connected broker
     s.send(('PUB\t'+topic+'\t'+data).encode('utf-8'))
 
-    s.setblocking(0)
+    #s.setblocking(0)
     
     s.close()
     print('Shutdown publisher..')

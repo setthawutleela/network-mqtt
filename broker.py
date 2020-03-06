@@ -124,7 +124,7 @@ def main():
     try:
         welcome_sock.bind(addr)
     except OSError:
-        print('\nError! {} was already used'.format(addr))
+        print('\nError! connecting failed on {}'.format(addr))
         try:
             sys.exit(0)
         except SystemExit:

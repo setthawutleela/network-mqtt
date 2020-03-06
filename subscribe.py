@@ -19,15 +19,15 @@ def delSocket():
     """Delete this socket that is kept in broker"""
     s.send(('SUB\tDEL_SOCKET').encode('utf-8'))
     s.close()
-    print('Shutdown socket..')
+    print('Shutdown subscriber..')
 
 def main():
     # Check the argument form
     if (checkArgv(sys.argv) == False):
         print('\nPlease enter correct usage:')
-        print('\n\t subscribe [IP address] [Topic]')
+        print('\n\tsubscribe [IP address] [Topic]')
         print('\n\t\tor')
-        print("\n\t subscribe '[IP address]' '[Topic]'")
+        print("\n\tsubscribe '[IP address]' '[Topic]'")
         try:
             sys.exit(0)
         except SystemExit:
@@ -62,7 +62,7 @@ def main():
             if(len(msg) > 0):
                 msg_decoded = msg.decode('utf-8')
                 
-                # Broker is closed
+                # Broker is closed or publisher wants to disconnect this socket
                 if('SHUTDOWN_CONN' == msg_decoded):
                     s.close()
                     print('Shutdown subscriber..')
